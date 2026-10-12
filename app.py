@@ -530,9 +530,10 @@ if uploaded_file is not None:
             date_eq("Planned Outbound", report_date)
             & all_df["Outbound Date"].isna()
         ].copy()
-        # FTL 异常：在上述基数中进一步筛选 Delivery Method = FTL
+        # 整车出库异常：FTL 和 Multi Drop 都属于整车运输方式
+        truckload_methods = {"FTL", "MULTI DROP"}
         exceptions = exception_base[
-            exception_base["Delivery Method"].str.upper().str.strip().eq("FTL")
+            exception_base["Delivery Method"].fillna("").astype(str).str.upper().str.strip().isin(truckload_methods)
         ].copy()
 
         warehouse_status = []
@@ -767,7 +768,7 @@ if uploaded_file is not None:
         with st.expander("🔎 查看 FTL 异常筛选明细"):
             st.write(
                 "筛选条件：Planned Outbound = 报告日期、Outbound Date 为空、"
-                "Delivery Method = FTL。"
+                "Delivery Method 为 FTL 或 Multi Drop。"
             )
             st.dataframe(exceptions, use_container_width=True)
 
